@@ -1,47 +1,212 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
-	import { sleep } from '$lib/utils';
-	import { Game } from '$lib/game/Game';
-	import { Board } from '$lib/game/Board';
-
 	import MiniMax from '$lib/workers/MiniMax.worker?worker';
+
+	import { onMount } from 'svelte';
+	import { tweened } from 'svelte/motion';
+	import { bounceOut } from 'svelte/easing';
+
+	import { Cell, getPlayableColumns, getPlayableRow, type IBoard } from '$lib/core';
+	import { Disc } from '$lib/game/Disc';
+	import { Game } from '$lib/game/Game';
+	import { Player } from '$lib/game/Player';
 	import { WorkerEvent } from '$lib/workers';
+	import {
+		Board,
+		DISC_RADIUS,
+		DISC_SIZE,
+		DISC_X_OFFSET,
+		DISC_Y_OFFSET,
+		GAP
+	} from '$lib/game/Board';
+	import { sleep } from '$lib/utils';
+
+	function dipatchWorkerEvent<T>(
+		worker: Worker,
+		event: WorkerEvent<T>,
+		...transfarable: Transferable[]
+	) {
+		worker.postMessage(event, transfarable);
+	}
+	// https://github.com/LiteTJ/connect-four
 
 	let canvas: HTMLCanvasElement;
 	let game: Game;
 
 	onMount(() => {
-		game = new Game(canvas);
-		game.addEventListener('ready', readyHandler);
+		bootGame().catch((_e) => console.error(_e));
 	});
 
-	function readyHandler() {
-		game.removeEventListener('ready', readyHandler);
-		game.render();
+	async function bootGame() {
+		game = new Game(canvas);
+		await game.start();
+		readyHandler();
+	}
+
+	function createStopPoint(rowIndex: number) {
+		return DISC_Y_OFFSET + DISC_SIZE * rowIndex + GAP * rowIndex;
+	}
+
+	async function readyHandler() {
+		const ctx = game.ctx;
+
+		const player = new Player(DISC_X_OFFSET, DISC_Y_OFFSET, Cell.PLAYER);
+		const opponent = new Player(DISC_X_OFFSET, DISC_Y_OFFSET, Cell.OPPONENT);
 
 		const worker = new MiniMax();
 		const board = new Board();
-		const ctx = canvas.getContext('2d')!!;
 
-		board.render(ctx, canvas.width, canvas.height);
-		// console.debug(canvas.clientWidth, canvas.clientHeight);
+		dipatchWorkerEvent(worker, new WorkerEvent('init', board.board), board.buffer);
+		board.board = await getFromWorker();
 
-		worker.addEventListener('message', (e) => {
-			board.board = e.data;
-			board.render(ctx, canvas.width, canvas.height);
+		draw(player);
+
+		function draw(player: Player) {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			board.drawBack(ctx);
+
+			board.draw(ctx);
+
+			player.draw(ctx);
+
+			board.drawFront(ctx);
+		}
+
+		const isPlayerStarting = true; // Math.random() <= 0.5;
+
+		let current: Player;
+		let turn: 'player' | 'opponent';
+		let currentCol: number;
+
+		if (isPlayerStarting) {
+			current = player;
+			turn = 'player';
+		} else {
+			current = opponent;
+			turn = 'opponent';
+		}
+
+		game.addEventListener('draw', (event) => {
+			const { detail: idx } = event as CustomEvent<number>;
+			if (!getPlayableColumns(board.board).includes(idx)) return;
+			currentCol = current.playerPos = idx;
+			draw(current);
 		});
 
-		(async function () {
-			worker.postMessage(
-				new WorkerEvent('calculate', board.board),
-				board.board.map((row) => row.buffer)
+		async function dropAnimation(player: Player) {
+			canvas.style.pointerEvents = 'none';
+			const colIndex = player.playerPos;
+			const rowIndex = board.getEmptyRow(colIndex);
+			if (rowIndex === undefined) return;
+
+			// const stopPoint = createStopPoint(board.rows - rowIndex - 1);
+			const stopPoint = createStopPoint(rowIndex);
+			const animation = tweened(DISC_Y_OFFSET / stopPoint, {
+				duration: 700,
+				easing: bounceOut
+			});
+
+			animation.subscribe((v) => {
+				player.y = v * stopPoint;
+				draw(player);
+			});
+
+			await animation.set(1);
+
+			board.board[rowIndex][colIndex] = player.cellType;
+			player.move = [rowIndex, colIndex];
+
+			// player.move = [board.rows - rowIndex - 1, colIndex];
+			draw(player);
+		}
+
+		function reset(player: Player) {
+			canvas.style.pointerEvents = '';
+			player.resetY();
+
+			const columns = getPlayableColumns(board.board);
+			player.playerPos = columns.includes(currentCol)
+				? currentCol
+				: columns.reduce((prev, curr) => {
+						return Math.abs(curr - currentCol) < Math.abs(prev - currentCol)
+							? curr
+							: prev;
+				  }, 0);
+
+			draw(player);
+		}
+
+		game.addEventListener('drop', async (_) => {
+			await dropAnimation(current);
+			changePlayer();
+
+			const { move, data } = await calculateAIPosition(player.move);
+
+			board.board = data;
+			if (move === undefined) return;
+			current.playerPos = move[1];
+			await dropAnimation(current);
+			requestAnimationFrame(() => {
+				changePlayer();
+				reset(current);
+			});
+		});
+
+		function changePlayer() {
+			if (turn === 'opponent') {
+				current = player;
+				turn = 'player';
+			} else {
+				current = opponent;
+				turn = 'opponent';
+			}
+		}
+
+		function getFromWorker<T = any>() {
+			return new Promise<T>((res, rej) => {
+				worker.addEventListener('message', receiver);
+				worker.addEventListener('error', errHandler);
+				worker.addEventListener('messageerror', errHandler);
+
+				function errHandler(e: ErrorEvent | MessageEvent) {
+					worker.removeEventListener('error', errHandler);
+					rej(e);
+				}
+				function receiver(e: MessageEvent<T>) {
+					worker.removeEventListener('message', receiver);
+					res(e.data);
+				}
+			});
+		}
+
+		function calculateAIPosition<T = any>(move: [number, number]) {
+			dipatchWorkerEvent(
+				worker,
+				new WorkerEvent('calculate', { move, board: board.board }),
+				board.buffer
 			);
+			return new Promise<T>((res, rej) => {
+				worker.addEventListener('message', receiver);
+				worker.addEventListener('error', errHandler);
+				worker.addEventListener('messageerror', errHandler);
 
-			await sleep(2000);
+				function errHandler(e: ErrorEvent | MessageEvent) {
+					worker.removeEventListener('error', errHandler);
+					rej(e);
+				}
+				function receiver(e: MessageEvent<T>) {
+					worker.removeEventListener('message', receiver);
+					res(e.data);
+				}
+			});
+		}
+	}
 
-			worker.postMessage(new WorkerEvent('close'));
-		})();
+	function playRandomSong() {
+		const context = new AudioContext();
+		const osc = context.createOscillator();
+		osc.connect(context.destination);
+		osc.start(setInterval((_) => (osc.frequency.value = 300 + Math.random() * 300), 192));
 	}
 </script>
 

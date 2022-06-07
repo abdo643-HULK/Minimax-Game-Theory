@@ -1,11 +1,8 @@
-import type { Board } from '$lib/game/Board';
+type ArrayLike = Uint8Array | Int8Array | Uint8ClampedArray | number[];
 
-export function evaluate(board: Board): Number {
-	for (const key of Array(5).keys()) {
-		for (const value of Array(5).keys()) {
-			console.log(key);
-		}
-	}
+export type IBoard = ArrayLike[];
 
-	return 0;
-}
+export * from './algorithms/alphaBeta';
+export * from './algorithms/minimax';
+export * from './getValidLocation';
+export * from './entities';

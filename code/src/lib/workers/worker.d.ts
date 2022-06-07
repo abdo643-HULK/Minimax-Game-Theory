@@ -8,8 +8,11 @@ interface Message<T = any> {
 	data: T;
 }
 
-type CalculateEvent = CustomEvent<Uint8Array[]>;
+type InitEvent = CustomEvent<Uint8Array[]>;
+
+type CalculateEvent = CustomEvent<{ move: [number, number]; board: Uint8Array[] }>;
 
 interface DedicatedWorkerGlobalScopeEventMap {
 	calculate: CalculateEvent;
+	init: InitEvent;
 }

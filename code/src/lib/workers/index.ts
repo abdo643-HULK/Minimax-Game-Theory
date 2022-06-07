@@ -1,9 +1,3 @@
-export class WorkerEvent<T> {
-	type: string;
-	data: T | undefined;
-
-	constructor(type: string, data?: T) {
-		this.type = type;
-		this.data = data;
-	}
-}
+//@index(['./*.ts', '!./*.d.ts'], f => `export * from '${f.path}';`)
+export * from './MiniMax.worker';
+export * from './WorkerEvent';
