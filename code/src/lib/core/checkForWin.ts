@@ -1,6 +1,5 @@
 import type { Cell } from './entities';
 import type { IBoard } from '$lib/core';
-import { play } from './algorithms/alphaBeta';
 
 // export const enum Player {
 //     AI,
@@ -10,30 +9,31 @@ import { play } from './algorithms/alphaBeta';
 const WINNING_COUNT = 4;
 export function checkForWin(
 	board: IBoard,
-	move: [number, number] = [0, 0],
+	move: Move = [0, 0],
 	playerType: Cell.PLAYER | Cell.OPPONENT
-): [boolean, number[][] | null] {
-	const winningPositions: number[][] = [];
+): Move[] | null {
+	const winningPositions: Move[] = [];
 
-	function checkLine(deltaXY: Readonly<[number, number]>): boolean {
+	function checkLine(deltaXY: Readonly<Move>): boolean {
 		let [deltaX, deltaY] = deltaXY;
 
 		let n = 0;
 		let [row, col] = move;
 		while (board[row]?.[col] === playerType) {
 			++n;
-			[row, col] = [row + deltaX, col + deltaY];
 			winningPositions.push([row, col]);
+			[row, col] = [row + deltaX, col + deltaY];
 		}
 
 		[row, col] = move;
 		while (board[row]?.[col] === playerType) {
 			++n;
-			[row, col] = [row - deltaX, col - deltaY];
 			winningPositions.push([row, col]);
+			[row, col] = [row - deltaX, col - deltaY];
 		}
 
 		--n; // Because we counted move itself twice
+
 		return n >= WINNING_COUNT;
 	}
 
@@ -42,18 +42,18 @@ export function checkForWin(
 	// Worker Pool would be the best approach
 
 	// checks for 4 in column
-	if (checkLine([0, 1])) return [true, winningPositions];
+	if (checkLine([0, 1])) return winningPositions;
 	winningPositions.splice(0);
 	// checks for 4 in row
-	if (checkLine([1, 0])) return [true, winningPositions];
+	if (checkLine([1, 0])) return winningPositions;
 	winningPositions.splice(0);
 	// checks for 4 in negative slope
-	if (checkLine([1, -1])) return [true, winningPositions];
+	if (checkLine([1, -1])) return winningPositions;
 	winningPositions.splice(0);
 	// checks for 4 in positive slope
-	if (checkLine([1, 1])) return [true, winningPositions];
+	if (checkLine([1, 1])) return winningPositions;
 
-	return [false, null];
+	return null;
 }
 
 export function winningMove(board: IBoard, playerType: Cell.PLAYER | Cell.OPPONENT) {

@@ -5,17 +5,6 @@ import { checkForWin, winningMove } from '../checkForWin';
 
 import type { IBoard } from '$lib/core';
 
-// class Move {
-// 	readonly x: number;
-// 	readonly y: number;
-
-// 	constructor(x: number, y: number) {
-// 		this.x = x;
-// 		this.y = y;
-// 	}
-// }
-
-type Move = [number, number];
 type Utility = 1 | 0 | -1;
 
 export class State {
@@ -38,17 +27,14 @@ export class State {
 }
 
 /**
- * Time Complexity: O(b^(3d/4))
+ * Time Complexity: O(b^(d/2)) This means, within the same amount of time,
+ * alpha-beta pruning search can search twice as deeply
  *
- * @param board
+ * Additional Question: Space Complexity?  Answer: O(b*d)
+ * @param state
  * @param depth
- * @param alpha
- * @param beta
- * @param isMax
  * @returns
  */
-export let play = 0;
-
 export function alphaBeta(
 	state: State,
 	depth: number
@@ -57,42 +43,6 @@ export function alphaBeta(
 ): Move | undefined {
 	return alphaBetaBook(state, depth);
 	// return alphaBetaArticle(board, depth) as unknown as Move;
-}
-
-function computeUtility(board: IBoard, move: Move, player: Cell.PLAYER | Cell.OPPONENT) {
-	if (checkForWin(board, move, player)[0]) return player === Cell.PLAYER ? 1 : -1;
-	return 0;
-}
-
-export function result(state: State, move: Move) {
-	const { board, player: toMove } = state;
-	const [row, col] = move;
-
-	board[row][col] = state.player;
-	const moves = state.moves.filter(([row, col]) => !(row === move[0] && col === move[1]));
-
-	return new State(
-		board,
-		moves,
-		computeUtility(board, move, state.player),
-		toMove === Cell.PLAYER ? Cell.OPPONENT : Cell.PLAYER
-	);
-}
-
-export function getActions(state: State) {
-	const actions = [];
-	for (const move of state.moves) {
-		const [row, col] = move;
-
-		if (
-			row === state.board.length - 1 ||
-			(row + 1 < state.board.length && state.board[row + 1][col] !== Cell.EMPTY)
-		) {
-			actions.push(move);
-		}
-	}
-
-	return actions;
 }
 
 function alphaBetaBook(state: State, depth: number) {
@@ -182,6 +132,42 @@ function alphaBetaBook(state: State, depth: number) {
 	}
 
 	return bestMove;
+}
+
+function computeUtility(board: IBoard, move: Move, player: Cell.PLAYER | Cell.OPPONENT) {
+	if (checkForWin(board, move, player) !== null) return player === Cell.PLAYER ? 1 : -1;
+	return 0;
+}
+
+export function result(state: State, move: Move) {
+	const { board, player: toMove } = state;
+	const [row, col] = move;
+
+	board[row][col] = state.player;
+	const moves = state.moves.filter(([row, col]) => !(row === move[0] && col === move[1]));
+
+	return new State(
+		board,
+		moves,
+		computeUtility(board, move, state.player),
+		toMove === Cell.PLAYER ? Cell.OPPONENT : Cell.PLAYER
+	);
+}
+
+export function getActions(state: State) {
+	const actions = [];
+	for (const move of state.moves) {
+		const [row, col] = move;
+
+		if (
+			row === state.board.length - 1 ||
+			(row + 1 < state.board.length && state.board[row + 1][col] !== Cell.EMPTY)
+		) {
+			actions.push(move);
+		}
+	}
+
+	return actions;
 }
 
 /**************************************************/

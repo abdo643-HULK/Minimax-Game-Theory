@@ -4,35 +4,37 @@ import { DISC_RADIUS, DISC_SIZE, DISC_X_OFFSET, DISC_Y_OFFSET, GAP } from './Boa
 import type { Cell } from '$lib/core';
 
 export class Player {
-	private _x: number = 0;
-	private _y: number = 0;
+	// readonly name: string;
 
 	private readonly _disc;
-	private _playerPos: number = 0;
+	private _pos: number = 0;
 
-	move: [number, number] = [0, 0];
+	move: [number, number] | undefined = undefined;
 
-	constructor(x: number, y: number, cell: Exclude<Cell, Cell.EMPTY>) {
-		this._x = x;
-		this._y = y;
+	constructor(
+		readonly name: string,
+		cell: Exclude<Cell, Cell.EMPTY>,
+		private _x: number = 0,
+		private _y: number = 0
+	) {
 		this._disc = new Disc(DISC_RADIUS, cell);
 	}
 
-	set playerPos(pos: number) {
-		this._playerPos = pos;
+	set pos(pos: number) {
+		this._pos = pos;
 		this._x = DISC_X_OFFSET + DISC_SIZE * pos + GAP * pos;
 	}
 
-	get playerPos() {
-		return this._playerPos;
+	get pos() {
+		return this._pos;
 	}
 
 	set y(y: number) {
 		this._y = y;
 	}
 
-	get cellType() {
-		return this._disc.type;
+	get cellType(): Exclude<Cell, Cell.EMPTY | Cell.WIN> {
+		return this._disc.type as Exclude<Cell, Cell.EMPTY | Cell.WIN>;
 	}
 
 	resetY() {

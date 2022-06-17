@@ -17,46 +17,67 @@ import { getActions, result, type State } from './alphaBeta';
  * (i.e., the average number of legal moves in a position)
  *
  * Question: Time Complexity?  Answer: O(b^d) b = branching factor, d = depth
- * Additional Question: Space Complexity?  Answer: O(b*m)
+ * Additional Question: Space Complexity?  Answer: O(b*d)
  */
-export function minimax(state: State): number {
+export function minimax(state: State, depth = Infinity): Move | undefined {
 	const player = state.player;
 
-	const checkIsTerminal = (state: State): boolean =>
-		state.utility !== 0 || state.moves.length === 0;
+	const checkIsTerminal = (state: State, currentDepth: number): boolean =>
+		currentDepth == 0 || state.utility !== 0 || state.moves.length === 0;
 
 	const evalFn = (state: State): number =>
 		player === Cell.PLAYER ? state.utility : -state.utility;
 
-	function maximizer(state: State): number {
-		if (checkIsTerminal(state)) return evalFn(state);
+	function maximizer(state: State, depth: number): number {
+		if (checkIsTerminal(state, depth)) return evalFn(state);
 		// let best = -Infinity;
 		// for (const action of getActions(state)) {
+		// const [x, y] = action;
 		// 	best = Math.max(best, minimizer(result(state, action)));
+		// state.board[x][y] = Cell.EMPTY;
 		// }
 		// return best;
 
 		return getActions(state).reduce((prev, action) => {
-			return Math.max(prev, minimizer(result(state, action)));
+			const [x, y] = action;
+			const best = Math.max(prev, minimizer(result(state, action), depth - 1));
+			state.board[x][y] = Cell.EMPTY;
+			return best;
 		}, -Infinity);
 	}
 
-	function minimizer(state: State): number {
-		if (checkIsTerminal(state)) return evalFn(state);
+	function minimizer(state: State, depth: number): number {
+		if (checkIsTerminal(state, depth)) return evalFn(state);
 
 		// let best = Infinity;
 		// for (const action of getActions(state)) {
+		// const [x, y] = action;
 		// 	best = Math.min(best, maximizer(result(state, action)));
+		// state.board[x][y] = Cell.EMPTY;
 		// }
 		// return best;
 
 		return getActions(state).reduce((prev, action): number => {
-			return Math.min(prev, maximizer(result(state, action)));
+			const [x, y] = action;
+			const best = Math.min(prev, maximizer(result(state, action), depth - 1));
+			state.board[x][y] = Cell.EMPTY;
+			return best;
 		}, Infinity);
 	}
 
-	return Math.max.apply(
-		Math,
-		getActions(state).map((action) => minimizer(result(state, action)))
-	);
+	let best = -Infinity;
+	let bestMove: Move | undefined = undefined;
+
+	for (const move of getActions(state)) {
+		const [row, col] = move;
+		const value = minimizer(result(state, move), depth - 1);
+		state.board[row][col] = Cell.EMPTY;
+
+		if (value > best) {
+			best = value;
+			bestMove = move;
+		}
+	}
+
+	return bestMove;
 }

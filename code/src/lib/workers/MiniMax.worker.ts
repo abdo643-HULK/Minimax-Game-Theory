@@ -19,6 +19,7 @@ function messageHandler(e: MessageEvent<Message>) {
 }
 
 let state: State;
+
 function init(e: InitEvent) {
 	const board = e.detail;
 	state = new State([], getValidLocations(board), 0, Cell.PLAYER);
@@ -28,19 +29,31 @@ function init(e: InitEvent) {
 function calculateHandler(e: CalculateEvent) {
 	const { move: playerMove, board: data } = e.detail;
 
-	const board = data.map((row) => [...row]);
-	// state = new State(board, getValidLocations(board), state.utility, state.toMove);
-	state.board = board;
-	state = result(state, playerMove);
-	console.time('alphaBeta');
-	const move = alphaBeta(state, 7);
-	console.timeEnd('alphaBeta');
-	if (move) state = result(state, move);
+	// const board = data.map((row) => [...row]);
+	state.board = data;
+	if (playerMove !== undefined) state = result(state, playerMove);
 
-	// console.time('minimax');
-	// const move = minimax(state);
-	// console.timeEnd('minimax');
-	// if (move) state = result(state, move);
+	const alphaBetaStart = performance.now();
+	const move = alphaBeta(state, 7);
+	const alphaBetaEnd = performance.now();
+	const alphaBetaDur = alphaBetaEnd - alphaBetaStart;
+	console.debug('AlphaBeta', move, `${alphaBetaDur}ms`);
+
+	// const minimaxStart = performance.now();
+	// const minimaxMove = minimax(state, 7);
+	// const minimaxEnd = performance.now();
+	// const minimaxDur = minimaxEnd - minimaxStart;
+	// console.debug('Minimax', minimaxMove, `${minimaxDur}ms`);
+	// console.debug('Difference', minimaxDur / alphaBetaDur);
+
+	console.debug('------------------------------------------------------');
+
+	if (move) {
+		state = result(state, move);
+		// We need to remove the bestmove because we
+		// want to animate the drop to position
+		data[move[0]][move[1]] = Cell.EMPTY;
+	}
 
 	self.postMessage({ move, data }, [data[0].buffer]);
 }

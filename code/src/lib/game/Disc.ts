@@ -1,17 +1,13 @@
 import type { Cell } from '$lib/core';
 
-export const FILL_STYLES = ['transparent', 'red', 'yellow'] as const;
+export const FILL_STYLES = ['transparent', 'red', 'yellow', 'transparent'] as const;
 
 export class Disc {
-	readonly radius: number;
-	readonly fillStyle: string;
-	readonly type: Cell;
-
-	constructor(radius: number, type: Cell) {
-		this.radius = radius;
-		this.fillStyle = FILL_STYLES[type];
-		this.type = type;
-	}
+	constructor(
+		readonly radius: number,
+		readonly type: Cell,
+		readonly fillStyle: string | CanvasGradient | CanvasPattern = FILL_STYLES[type]
+	) {}
 
 	draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
 		this.drawCoin(ctx, x, y);
