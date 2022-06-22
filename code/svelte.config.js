@@ -10,6 +10,11 @@ const StaticPlugin = {
 				res.setHeader('cache-control', 'max-age=31536000,immutable');
 			}
 
+			res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp').setHeader(
+				'Cross-Origin-Opener-Policy',
+				'same-origin'
+			);
+
 			next();
 		});
 	}
