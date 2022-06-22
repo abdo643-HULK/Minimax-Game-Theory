@@ -22,16 +22,16 @@ export function minimax(state: State, depth = Infinity): Move | undefined {
 		if (checkIsTerminal(state, depth)) return evalFn(state);
 		// let best = -Infinity;
 		// for (const action of getActions(state)) {
-		// const [x, y] = action;
+		// const [row, col] = action;
 		// 	best = Math.max(best, minimizer(result(state, action)));
-		// state.board[x][y] = Cell.EMPTY;
+		// state.board[row][col] = Cell.EMPTY;
 		// }
 		// return best;
 
 		return getActions(state).reduce((prev, action) => {
-			const [x, y] = action;
+			const [row, col] = action;
 			const best = Math.max(prev, minimizer(result(state, action), depth - 1));
-			state.board[x][y] = Cell.EMPTY;
+			state.board[row][col] = Cell.EMPTY;
 			return best;
 		}, -Infinity);
 	}
@@ -41,16 +41,16 @@ export function minimax(state: State, depth = Infinity): Move | undefined {
 
 		// let best = Infinity;
 		// for (const action of getActions(state)) {
-		// const [x, y] = action;
+		// const [row, col] = action;
 		// 	best = Math.min(best, maximizer(result(state, action)));
-		// state.board[x][y] = Cell.EMPTY;
+		// state.board[row][col] = Cell.EMPTY;
 		// }
 		// return best;
 
 		return getActions(state).reduce((prev, action): number => {
-			const [x, y] = action;
+			const [row, col] = action;
 			const best = Math.min(prev, maximizer(result(state, action), depth - 1));
-			state.board[x][y] = Cell.EMPTY;
+			state.board[row][col] = Cell.EMPTY;
 			return best;
 		}, Infinity);
 	}
