@@ -1,0 +1,17 @@
+{
+	"name": "Connect 4",
+	"short_name": "Connect 4",
+	"scope": "/",
+	"start_url": "/",
+	"display": "standalone",
+	"theme_color": "#000",
+	"background_color": "#FFF",
+	"description": "Connect 4 Game",
+	"icons": [
+		{
+			"src": "/images/icon.webp",
+			"type": "image/webp",
+			"sizes": "512x512"
+		}
+	]
+}

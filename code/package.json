@@ -20,5 +20,8 @@
 		"typescript": "~4.6.4",
 		"vite": "^2.9.9"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@sveltejs/adapter-static": "1.0.0-next.34"
+	}
 }
