@@ -1,7 +1,7 @@
 declare const self: DedicatedWorkerGlobalScope;
 
 import { browser } from '$app/env';
-import { minimax, alphaBeta, State, getValidLocations, Cell, result } from '$lib/core';
+import { Cell, State, minimax, getValidLocations, result, alphaBeta } from '$lib/core';
 
 if (browser) {
 	self.addEventListener('init', init);
