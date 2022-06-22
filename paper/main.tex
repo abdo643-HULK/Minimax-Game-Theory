@@ -1,0 +1,84 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage[naustrian]{babel}
+% \usepackage[a4paper]{geometry}
+% \usepackage[left]{eurosym}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+
+\begin{document}
+
+\title{MiniMax Game Theory}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Ikic}
+    \IEEEauthorblockA{\textit{Mobile Computing} \\
+        \textit{FH OÖ Campus Hagenberg}\\
+        Hagenberg, Austria \\
+        email address or ORCID
+    }
+    \and
+    \IEEEauthorblockN{2\textsuperscript{nd} Shehata}
+    \IEEEauthorblockA{\textit{Mobile Computing} \\
+        \textit{FH OÖ Campus Hagenberg}\\
+        Hagenberg, Austria \\
+        email address or ORCID
+    }
+    \and
+    \IEEEauthorblockN{3\textsuperscript{rd} Milosavljevic}
+    \IEEEauthorblockA{\textit{Mobile Computing} \\
+        \textit{FH OÖ Campus Hagenberg}\\
+        Hagenberg, Austria \\
+        email address or ORCID
+    }
+}
+
+\maketitle
+
+\begin{abstract}
+    This document is a model and instructions for \LaTeX.
+    This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes,
+    or Math in Paper Title or Abstract.
+\end{abstract}
+
+\section{AV1}
+AOMedia Video 1 (AV1) ist ein offenes lizenzkostenfreies Verfahren zur Videokompression. Es wird von der Alliance for Open Media (AOMedia) entwickelt, einem 2015 gegründeten Konsortium mit führenden Unternehmen aus der Halbleiterindustrie, Video-on-Demand-Anbietern und Webbrowser-Entwicklern.
+
+Es entstand durch Weiterentwicklung von Googles Verfahren VP9 und soll mit HEVC/H.265 der Moving Picture Experts Group konkurrieren. Die erste Version der Spezifikation des neuen freien Videocodecs AV1 wurde Ende März 2018 freigegeben Inzwischen (Stand Januar 2021) gibt es drei Open-Source-Encoder und verschiedene Decoder, die meist in Form von Bibliotheken in andere Programme eingebunden werden.
+
+Die Webbrowser Google Chrome, Mozilla Firefox und Opera unterstützen auf Desktop-Geräten das Abspielen von Videos in AV1-Kodierung seit Ende 2018, seit Anfang 2020 auch Microsoft Edge. Diese 4 Browser haben dort zusammen einen Marktanteil von über 80\% (Stand Dezember 2020)
+
+Mit AV1 kodierte Videodaten können im Containerformat MP4, MKV oder zusammen mit dem Audioformat Opus innerhalb von WebM, beispielsweise für HTML5-Webvideo, verwendet werden.
+\subsection{Technik}
+AV1 ist ein traditionelles blockbasiertes Frequenztransformationsformat mit neuen Techniken, von denen einige in experimentellen Formaten entwickelt wurden, die Technik für ein Format der nächsten Generation nach HEVC und VP9 erprobt hatten.Basierend auf Googles experimenteller VP9-Weiterentwicklung VP10 enthält AV1 zusätzliche Techniken, die in Xiphs/Mozillas Daala und Ciscos Thor entwickelt wurden.
+
+Die Allianz veröffentlicht eine in C und Assemblersprache geschriebene Referenzimplementierung (aomenc, aomdec) als freie Software unter den Bedingungen der FreeBSD-Lizenz. Die Entwicklung findet in der Öffentlichkeit statt und ist offen für Beiträge, unabhängig von der AOM-Mitgliedschaft.
+
+Der Entwicklungsprozess sieht so aus, dass Kodierungswerkzeuge dem Referenzcode zuerst als Experimente hinzugefügt werden, die durch Schalter gesteuert werden, die sie bei der Kompilierung aktivieren oder ausschließen, um durch andere Gruppenmitglieder sowie spezialisierte Arbeitsgruppen überprüft zu werden, die für Hardware-Freundlichkeit und Einhaltung von Rechten an geistigem Eigentum sorgen. Sobald das Merkmal in der Gemeinschaft eine gewisse Unterstützung erlangt hat, kann das Experiment standardmäßig aktiviert werden, und wenn schließlich alle Gutachten abgeschlossen sind, wird sein Schalter entfernt.Experimentnamen werden im configure-Skript in Kleinbuchstaben und in bedingten Kompilierungsschalter in Großbuchstaben geschrieben.
+
+\subsubsection{Datentransformation}
+Um Pixeldaten in die Frequenzdomäne zu transformieren, enthält AV1 eine Reihe von spezialisierten Frequenztransformationen wie rechteckige Versionen der DCT und asymmetrische Versionen der DST für Kantenblöcke.
+
+Es kann zwei eindimensionale Transformationen kombinieren, um unterschiedliche Transformationen für die horizontale und die vertikale Dimension zu verwenden (ext\_tx)
+\subsubsection{Partitionierung}
+Die Vorhersage kann für größere Einheiten ($\leq$ 128×128) geschehen und diese können auf mehr Arten weiter unterteilt werden. „T-förmige“ Unterteilungsmuster für Kodiereinheiten werden eingeführt; ein Merkmal, das für VP10 entwickelt wurde. Mit einer weichen, keilförmigen Übergangslinie (keilförmig unterteilte Vorhersage) können nun für räumlich unterschiedliche Teile eines Blocks zwei getrennte Vorhersagen verwendet werden. Dies ermöglicht eine genauere Trennung von Objekten ohne die traditionellen Treppenlinien entlang der Grenzen quadratischer Blöcke.
+
+Parallelisierbarkeit innerhalb eines Einzelbildes wird durch Kacheln (vertikal) und Kachelreihen (horizontal) ermöglicht.
+Durch die konfigurierbare Vorhersageabhängigkeit zwischen den Kachelreihen ist eine höhere Kodierparallelität möglich.
+\subsubsection{Vorhersage}
+AV1 führt die interne Verarbeitung mit höherer Präzision (10 oder 12 Bit pro Abtastwert) durch, was zu einer Verbesserung der Kompression führt, da die Rundungsfehler in den Referenzbildern geringer sind.
+
+Vorhersagen können auf kompliziertere Weise (als ein einheitlicher Durchschnitt) in einem Block kombiniert werden, einschließlich weicher und scharfer Gradienten in verschiedenen Richtungen. Dies ermöglicht die Kombination von entweder zwei Inter-Vorhersagen oder einer Inter- und einer Intra-Vorhersage im selben Block.
+
+Die zeitliche (Inter-)Vorhersage kann mehr Referenzen verwenden.
+
+Die Werkzeuge Warped Motion (warped\_motion) und Global Motion (global\_motion) in AV1 zielen darauf ab, redundante Informationen in Bewegungsvektoren zu reduzieren, indem sie Muster erkennen, die durch Kamerabewegungen entstehen. Sie setzen Ideen um, deren Nutzung bereits in früheren Formaten wie zum Beispiel MPEG-4 ASP versucht wurde.
+
+Für die Intra-Vorhersage gibt es 56 (statt 8) Winkel für die Vorhersage durch gerichtete Extrapolation und gewichtete Filter für die Extrapolation auf Pixelbasis. Korrelationen zwischen der Leuchtkraft und der Farbinformation können nun mit einem Chroma-von-Luma-Vorhersagewerkzeug (cfl) ausgenutzt werden.
+
+% https://www.cbc.ca/kids/games/play/connect-4
+
+\end{document}
