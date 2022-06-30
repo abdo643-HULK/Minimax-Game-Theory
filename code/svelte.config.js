@@ -1,5 +1,5 @@
-import adapter from '@sveltejs/adapter-auto';
 import preprocess from 'svelte-preprocess';
+import adapter from '@sveltejs/adapter-static';
 
 /** @type {import('vite').PluginOption} */
 const StaticPlugin = {
@@ -28,7 +28,12 @@ const config = {
 
 	kit: {
 		adapter: adapter(),
+		prerender: {
+			default: true,
+			entries: ['*']
+		},
 		vite: {
+			// @ts-ignore
 			plugins: [StaticPlugin],
 			build: {
 				target: 'ES2020'
