@@ -3,4 +3,8 @@
 *.dvi
 *.fls
 *.fdb_latexmk
-*.pdf
+*.xml
+*.bbl
+*.bcf
+*.blg
+*.xdv
