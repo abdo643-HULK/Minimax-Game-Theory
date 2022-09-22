@@ -1,6 +1,6 @@
 declare const self: DedicatedWorkerGlobalScope;
 
-import { browser } from '$app/env';
+import { browser } from '$app/environment';
 import { Cell, State, minimax, getValidLocations, result, alphaBeta } from '$lib/core';
 
 if (browser) {
